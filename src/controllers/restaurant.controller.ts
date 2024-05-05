@@ -40,10 +40,10 @@ restaurantController.processSignup = async (req: Request, res: Response) => {
         newMember.memberType = MemberType.RESTAURANT;
         const memberService = new MemberService()
         const result = await memberService.processSignup(newMember)
-        res.status(200).json({ state: "sucess", value: result })
+        res.json({ state: "sucess", value: result })
     } catch (err: any) {
         console.log(`Error, processSignup, ${err.message}`)
-        res.status(501).json({ state: "fail", message: err.message })
+        res.json({ state: "fail", message: err.message })
     }
 }
 
