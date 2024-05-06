@@ -1,5 +1,5 @@
 import memberSchema from "../schema/member.schema";
-import { Member, MemberInput } from "../libs/types/member";
+import { LoginInput, Member, MemberInput } from "../libs/types/member";
 import { MemberType } from "../libs/enums/member.enum";
 import { MemberStatus } from "../libs/enums/member.enum";
 import Errors, { HttpCode, Message } from "../libs/Errors";
@@ -10,7 +10,7 @@ class MemberService {
         this.memberModel = memberSchema
     }
     public async processSignup(input: MemberInput): Promise<Member> {
-        const exist = await this.memberModel.find({
+        const exist = await this.memberModel.findOne({
             memberType: MemberType.RESTAURANT,
             memberStatus: MemberStatus.ACTIVE
         }).exec()
@@ -21,6 +21,20 @@ class MemberService {
             return result
         } catch (err: any) {
             throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED)
+        }
+    }
+
+    public async processLogin(input: LoginInput) {
+        try {
+            const member = await this.memberModel.findOne({ memberNick: input.memberNick }, { memberNick: 1, memberPassword: 1 }).exec()
+            if (!member) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+            const isMatch = member.memberPassword === input.memberPassword;
+            if (!isMatch) throw new Errors(HttpCode.UNAUTHORIZED, Message.WRONG_PASSWROD);
+
+            return await this.memberModel.findById(member._id).exec();
+        } catch (err: any) {
+            throw err
         }
     }
 }
